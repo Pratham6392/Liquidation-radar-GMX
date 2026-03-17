@@ -1,0 +1,30 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true,  "name": "user",          "type": "address" },
+      { "indexed": false, "name": "coin",          "type": "string"  },
+      { "indexed": false, "name": "isBuy",         "type": "bool"    },
+      { "indexed": false, "name": "price",         "type": "uint64"  },
+      { "indexed": false, "name": "sz",            "type": "uint64"  },
+      { "indexed": false, "name": "startPosition", "type": "int64"   },
+      { "indexed": false, "name": "isLiquidation", "type": "bool"    },
+      { "indexed": false, "name": "pnl",           "type": "int64"   },
+      { "indexed": false, "name": "oid",           "type": "uint64"  },
+      { "indexed": false, "name": "fillHash",      "type": "bytes32" }
+    ],
+    "name": "Fill",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true,  "name": "coin",         "type": "string" },
+      { "indexed": false, "name": "fundingRate",  "type": "int64"  },
+      { "indexed": false, "name": "openInterest", "type": "int64"  },
+      { "indexed": false, "name": "timestamp",    "type": "uint64" }
+    ],
+    "name": "FundingRateUpdate",
+    "type": "event"
+  }
+]

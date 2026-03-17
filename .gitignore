@@ -1,0 +1,18 @@
+**/node_modules/
+**/dist/
+**/build/
+**/.env
+**/.env.*
+
+# Envio indexer artifacts
+terminal/generated/
+terminal/logs/
+terminal/artifacts/
+
+# Tooling
+.DS_Store
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+

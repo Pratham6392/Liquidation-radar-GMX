@@ -1,0 +1,141 @@
+"""
+Unified representation of a perpetual futures position across GMX (Arbitrum)
+and Hyperliquid (HL1). Both protocols normalise into this single entity so
+the trading terminal always queries one GraphQL type regardless of the
+underlying chain.
+"""
+type Position {
+  "Composite key: <PROTOCOL>-<user>-<market>-<long|short>"
+  id: ID!
+
+  "Trader address (checksummed lowercase)"
+  user: String! @index
+
+  "Protocol identifier: 'GMX' or 'HYPERLIQUID'"
+  protocol: String! @index
+
+  "Market symbol, e.g. 'ETH-USD', 'BTC-USD'. Derived from market contract address on GMX or coin string on HL."
+  market: String! @index
+
+  "True = long position, False = short position"
+  isLong: Boolean!
+
+  "Average entry price in USD (BigDecimal for arbitrary precision)"
+  entryPrice: BigDecimal!
+
+  "Total leveraged position size in USD"
+  sizeUsd: BigDecimal!
+
+  "Alias for sizeUsd — explicit notional used in health calculations"
+  notionalSizeUsd: BigDecimal!
+
+  "Initial collateral deposited in USD at the time of the last position open / increase"
+  initialCollateralUsd: BigDecimal!
+
+  "Effective leverage = notionalSizeUsd / initialCollateralUsd"
+  leverage: BigDecimal!
+
+  "Cumulative protocol fees (trading + funding + borrow) in USD"
+  accruedFeesUsd: BigDecimal!
+
+  "Estimated unrealised PnL in USD at the time of the last event"
+  unrealizedPnlUsd: BigDecimal!
+
+  "Cumulative realised PnL in USD (increases on partial close / funding settlement)"
+  realizedPnlUsd: BigDecimal!
+
+  "Estimated liquidation price in USD"
+  liquidationPrice: BigDecimal!
+
+  """
+  Quantitative health score: (Equity / MaintenanceMargin) * 100.
+  >200 = HEALTHY, 150-200 = MODERATE, 110-150 = AT_RISK,
+  100-110 = WARNING, <=100 = CRITICAL / LIQUIDATED.
+  """
+  healthScore: BigDecimal!
+
+  "Human-readable margin health bucket derived from healthScore: HEALTHY | MODERATE | AT_RISK | WARNING | CRITICAL | LIQUIDATED | CLOSED"
+  marginHealth: String! @index
+
+  "Collateral token address or symbol"
+  collateralToken: String!
+
+  "Index token address or symbol"
+  indexToken: String!
+
+  "Unix timestamp of the block in which this position was last updated"
+  blockTimestamp: BigInt!
+
+  "Block number of the last update"
+  lastUpdatedBlock: BigInt!
+
+  "True while the position has non-zero size; set to false on full close or liquidation"
+  isOpen: Boolean! @index
+}
+
+"""
+Immutable event-level record for every size change on a Position.
+Enables historical PnL charting, liquidation feeds, and post-mortem
+audit trails without aggregations.
+"""
+type PositionUpdate {
+  "Composite key: <positionId>-<eventType>-<blockNumber>-<logIndex>"
+  id: ID!
+
+  "FK reference to the parent Position entity"
+  position_id: String! @index
+
+  "Trader address (copied from Position for fast per-user liquidation queries)"
+  user: String! @index
+
+  "GMX or HYPERLIQUID"
+  protocol: String!
+
+  "INCREASE | DECREASE | LIQUIDATION | FILL"
+  eventType: String! @index
+
+  "Execution / fill price in USD"
+  executionPrice: BigDecimal!
+
+  "Absolute USD change in position size for this event (positive)"
+  sizeDeltaUsd: BigDecimal!
+
+  "Absolute USD change in collateral for this event (positive = deposit, negative = withdrawal)"
+  collateralDeltaUsd: BigDecimal!
+
+  "Realised PnL delta in USD for this event (can be negative)"
+  realizedPnlDelta: BigDecimal!
+
+  "Block number"
+  blockNumber: BigInt!
+
+  "Unix block timestamp — indexed for time-ordered liquidation feed queries"
+  blockTimestamp: BigInt! @index
+
+  "Transaction hash that triggered this update"
+  txHash: String!
+}
+
+"""
+Latest funding rate sample per market per protocol.
+Overwritten on each FundingRateUpdate event; historical samples live in PositionUpdate.
+"""
+type FundingRate {
+  "Composite key: <PROTOCOL>-<market>-<blockTimestamp>"
+  id: ID!
+
+  "GMX or HYPERLIQUID"
+  protocol: String!
+
+  "Market symbol, e.g. ETH-USD"
+  market: String! @index
+
+  "Current funding rate per hour (signed, BigDecimal)"
+  fundingRate: BigDecimal!
+
+  "Total open interest on this market in USD"
+  openInterest: BigDecimal!
+
+  "Unix block timestamp of this sample"
+  blockTimestamp: BigInt!
+}

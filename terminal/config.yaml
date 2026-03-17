@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: terminal
+
+# ---------------------------------------------------------------------------
+# Chain 1 — Arbitrum One (GMX v2)
+# ---------------------------------------------------------------------------
+# Contract: GMX v2 EventEmitter — 0xC8ee91A54287DB53897056e12D9819156D3822Fb
+# GMX v2 uses a generic log bus: every protocol event is emitted as
+# EventLog / EventLog1 / EventLog2 with eventName identifying the type.
+# Position events use EventLog1 (one indexed key = position key).
+# ---------------------------------------------------------------------------
+networks:
+- id: 42161
+  start_block: 107750000
+  contracts:
+  - name: GMXEventEmitter
+    address:
+    - 0xC8ee91A54287DB53897056e12D9819156D3822Fb
+    abi_file_path: abis/GMXEventEmitter.json
+    handler: src/EventHandlers.ts
+    events:
+    - event: EventLog1
+    - event: EventLog2
+
+# ---------------------------------------------------------------------------
+# Chain 2 — Hyperliquid HL1 (chain ID 999)
+# ---------------------------------------------------------------------------
+# Hyperliquid config is intentionally disabled until the user provides the
+# confirmed contract address and ABI for Fill / FundingRateUpdate events.
+# Uncomment and fill in the address once confirmed.
+# ---------------------------------------------------------------------------
+# - id: 999
+#   start_block: 0
+#   contracts:
+#   - name: HyperliquidFills
+#     address:
+#     - "<HYPERLIQUID_CONTRACT_ADDRESS>"
+#     abi_file_path: abis/HyperliquidFills.json
+#     handler: src/EventHandlers.ts
+#     events:
+#     - event: Fill
+#     - event: FundingRateUpdate
+
+# Include transaction hash in every event so PositionUpdate.txHash is populated
+field_selection:
+  transaction_fields:
+    - hash
+
+# Run both chains concurrently — best throughput for multichain indexers
+unordered_multichain_mode: true
+
+# Pre-fetch entities for all handlers in each batch before processing
+preload_handlers: true
