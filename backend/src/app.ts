@@ -9,7 +9,10 @@ import { marketsRouter } from "./routes/markets";
  * - local `node dist/index.js` (we call `listen()` in `src/index.ts`)
  * - Vercel serverless (Vercel calls a handler that forwards to this app)
  */
-export const app = express();
+const app = express();
+
+// IMPORTANT: Vercel's Express integration expects a default export.
+export default app;
 
 app.use(cors());
 app.use(express.json());
