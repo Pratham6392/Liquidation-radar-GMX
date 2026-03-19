@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { ORACLE_BASE_URL } from "../config";
 
 type TickerEntry = {

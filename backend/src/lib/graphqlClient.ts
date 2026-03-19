@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { GRAPHQL_URL } from "../config";
 
 export interface GraphQLResponse<T> {
