@@ -8,6 +8,15 @@ interface MarketMiniChartProps {
 export function MarketMiniChart({ candles }: MarketMiniChartProps) {
   if (!candles.length) return null;
 
+  const formatTooltipValue = (
+    value: number | string | ReadonlyArray<number | string> | undefined,
+  ) => {
+    const rawValue = Array.isArray(value) ? value[0] : value;
+    const numericValue =
+      typeof rawValue === "number" ? rawValue : Number(rawValue ?? 0);
+    return [`$${numericValue.toFixed(6)}`, "Price"] as const;
+  };
+
   const chartData = candles
     .slice()
     .sort((a, b) => a.timestamp - b.timestamp)
@@ -33,7 +42,7 @@ export function MarketMiniChart({ candles }: MarketMiniChartProps) {
               padding: "6px 8px",
             }}
             labelStyle={{ fontSize: 10, color: "#e2e8f0" }}
-            formatter={(value: number) => [`$${value.toFixed(6)}`, "Price"]}
+            formatter={formatTooltipValue}
           />
           <Area
             type="monotone"

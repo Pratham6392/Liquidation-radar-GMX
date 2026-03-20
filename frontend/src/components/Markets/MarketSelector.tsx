@@ -1,6 +1,5 @@
 import type { BucketSize, Protocol } from "../../types";
 import { useMarketState } from "../../state/marketState";
-import { ProtocolTag } from "../Common/Tag";
 
 const PROTOCOLS: { id: Protocol; label: string; available: boolean }[] = [
   { id: "GMX", label: "GMX", available: true },

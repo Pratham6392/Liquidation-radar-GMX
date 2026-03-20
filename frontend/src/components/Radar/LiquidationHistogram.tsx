@@ -9,62 +9,32 @@ import {
   ReferenceLine,
   Cell,
 } from "recharts";
-import type { TooltipProps } from "recharts";
 import { useMarketState } from "../../state/marketState";
 import { Card } from "../Common/Card";
 import { formatUsd } from "../../services/liquidationBuckets";
-import type { Bucket } from "../../types";
-
-/* ─── Custom Tooltip ─────────────────────────────────────────── */
-function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
-  if (!active || !payload?.length) return null;
-
-  const longVal = (payload.find((p) => p.dataKey === "longSize")?.value as number) ?? 0;
-  const shortVal = (payload.find((p) => p.dataKey === "shortSize")?.value as number) ?? 0;
-  const count = (payload[0]?.payload as Bucket)?.positionCount ?? 0;
-
-  return (
-    <div className="bg-brand-surface border border-brand-border rounded-xl shadow-card px-4 py-3 min-w-[190px] text-sm">
-      <p className="font-semibold text-brand-text mb-2 font-mono text-xs">{label}</p>
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-6">
-          <span className="flex items-center gap-1.5 text-brand-long">
-            <span className="w-2.5 h-2.5 rounded-sm bg-brand-long" />
-            Long liq
-          </span>
-          <span className="font-semibold text-brand-long tabular-nums">
-            {longVal > 0 ? formatUsd(longVal) : "—"}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-6">
-          <span className="flex items-center gap-1.5 text-brand-short">
-            <span className="w-2.5 h-2.5 rounded-sm bg-brand-short" />
-            Short liq
-          </span>
-          <span className="font-semibold text-brand-short tabular-nums">
-            {shortVal > 0 ? formatUsd(shortVal) : "—"}
-          </span>
-        </div>
-        <div className="border-t border-brand-border pt-1.5 mt-0.5 flex items-center justify-between">
-          <span className="text-brand-subtle text-xs">Positions</span>
-          <span className="font-medium text-brand-text tabular-nums">{count}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-brand-subtle text-xs">Total</span>
-          <span className="font-semibold text-brand-text tabular-nums">
-            {formatUsd(longVal + shortVal)}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ─── Y-axis formatter ───────────────────────────────────────── */
 function yAxisFormatter(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
   return `$${value}`;
+}
+
+function tooltipValueFormatter(
+  value: number | string | ReadonlyArray<number | string> | undefined,
+  name: number | string | undefined,
+) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const numericValue =
+    typeof rawValue === "number" ? rawValue : Number(rawValue ?? 0);
+  const seriesLabel =
+    name === "longSize"
+      ? "Long liq"
+      : name === "shortSize"
+        ? "Short liq"
+        : String(name ?? "Value");
+
+  return [numericValue > 0 ? formatUsd(numericValue) : "—", seriesLabel] as const;
 }
 
 /* ─── X-axis tick ────────────────────────────────────────────── */
@@ -190,7 +160,8 @@ export function LiquidationHistogram() {
               width={52}
             />
             <Tooltip
-              content={<CustomTooltip />}
+              formatter={tooltipValueFormatter}
+              labelFormatter={(label) => `Zone ${String(label)}`}
               cursor={{ fill: "rgba(99,102,241,0.06)", radius: 4 }}
             />
 

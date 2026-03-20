@@ -1,6 +1,6 @@
 import type { Bucket } from "../types";
 
-const API_BASE = "http://localhost:4000/api/v1";
+const API_BASE = "https://liquidation-radar-gmx.vercel.app/api/v1";
 
 // ─── Response types ───────────────────────────────────────────────────────────
 

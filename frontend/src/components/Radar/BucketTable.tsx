@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { Bucket } from "../../types";
 import { useMarketState } from "../../state/marketState";
 import { Card } from "../Common/Card";
 import { formatUsd } from "../../services/liquidationBuckets";
